@@ -1,0 +1,48 @@
+import React, { useState, ChangeEvent, FormEvent } from 'react';
+import { useHistory, Link } from 'react-router-dom';
+import { companySignup } from '../store/authSlice';
+import { useAppDispatch, useAppSelector } from '../store';
+import styled from 'styled-components';
+
+const Container = styled.div`display: flex; justify-content: center; align-items: center; height: 100vh;`;
+const Form = styled.form`border: 2px solid #6b7c93; padding: 40px; border-radius: 8px; background: white; width: 300px; display: flex; flex-direction: column; gap: 15px;`;
+const Input = styled.input`padding: 10px; border: 1px solid #ccc; border-radius: 4px;`;
+const Button = styled.button`padding: 10px; background: #4a90d9; color: white; border: none; border-radius: 4px; cursor: pointer; font-weight: bold;`;
+
+interface CompanyFormData { companyName: string; login: string; password: string; repeatPassword: string; }
+
+const RegistrationCompany: React.FC = () => {
+  const [formData, setFormData] = useState<CompanyFormData>({ companyName: '', login: '', password: '', repeatPassword: '' });
+  const dispatch = useAppDispatch();
+  const history = useHistory();
+  const { error } = useAppSelector((state) => state.auth);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    try {
+      await dispatch(companySignup(formData)).unwrap();
+      history.push('/vacancies');
+    } catch (err) { /* Ошибка обработана в slice */ }
+  };
+
+  return (
+    <Container>
+      <Form onSubmit={handleSubmit}>
+        <h2 style={{ textAlign: 'center' }}>Company Registration</h2>
+        {error && <p style={{ color: 'red', fontSize: 12 }}>{error}</p>}
+        <Input name="companyName" placeholder="Company Name" value={formData.companyName} onChange={handleChange} required />
+        <Input name="login" placeholder="Login" value={formData.login} onChange={handleChange} required />
+        <Input name="password" type="password" placeholder="Password" value={formData.password} onChange={handleChange} required />
+        <Input name="repeatPassword" type="password" placeholder="Repeat Password" value={formData.repeatPassword} onChange={handleChange} required />
+        <Button type="submit">Register Company</Button>
+        <div style={{ textAlign: 'center', fontSize: 12 }}><Link to="/login">Already have an account? Login</Link></div>
+      </Form>
+    </Container>
+  );
+};
+
+export default RegistrationCompany;
